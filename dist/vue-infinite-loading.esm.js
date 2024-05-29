@@ -87,7 +87,6 @@ var script$1 = /* #__PURE__ */defineComponent({
     spinnerView() {
       return !SPINNERS.includes(this.spinner) ? 'default' : this.spinner;
     }
-
   }
 });
 
@@ -166,6 +165,7 @@ script$1.__scopeId = "data-v-18ae5a62";
 /*
  * default property values
  */
+
 const props = {
   // the default spinner type
   spinner: 'default',
@@ -174,6 +174,7 @@ const props = {
   // the default force use infinite wrapper flag
   forceUseInfiniteWrapper: false
 };
+
 /**
  * default system settings
  */
@@ -186,10 +187,10 @@ const system = {
   // the max allowed number of continuous calls, unit: ms
   loopCheckMaxCalls: 10
 };
+
 /**
  * default slot messages
  */
-
 const slots = {
   noResults: 'No results :(',
   noMore: 'No more data :)',
@@ -197,6 +198,7 @@ const slots = {
   errorBtnText: 'Retry',
   spinner: ''
 };
+
 /**
  * the 3rd argument for event bundler
  * @see https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
@@ -204,7 +206,6 @@ const slots = {
 
 const evt3rdArg = (() => {
   let result = false;
-
   try {
     const arg = Object.defineProperty({}, 'passive', {
       get() {
@@ -213,16 +214,13 @@ const evt3rdArg = (() => {
         };
         return true;
       }
-
     });
     window.addEventListener('testpassive', arg, arg);
     window.remove('testpassive', arg, arg);
-  } catch (e) {
-    /* */
-  }
-
+  } catch (e) {/* */}
   return result;
 })();
+
 /**
  * warning messages
  */
@@ -230,6 +228,7 @@ const evt3rdArg = (() => {
 const WARNINGS = {
   INFINITE_EVENT: '`:on-infinite` property will be deprecated soon, please use `@infinite` event instead.'
 };
+
 /**
  * error messages
  */
@@ -250,20 +249,20 @@ or
 </div>
     `, 'more details: https://github.com/PeachScript/vue-infinite-loading/issues/55#issuecomment-316934169'].join('\n')
 };
+
 /**
  * plugin status constants
  */
-
 const STATUS = {
   READY: 0,
   LOADING: 1,
   COMPLETE: 2,
   ERROR: 3
 };
+
 /**
  * default slot styles
  */
-
 const SLOT_STYLES = {
   color: '#666',
   fontSize: '14px',
@@ -280,129 +279,123 @@ var config = {
 };
 
 /* eslint-disable no-console */
+
 /**
  * console warning in production
  * @param {String} msg console content
  */
-
 function warn(msg) {
   /* istanbul ignore else */
   {
     console.warn(`[Vue-infinite-loading warn]: ${msg}`);
   }
 }
+
 /**
  * console error
  * @param {String} msg console content
  */
-
 function error(msg) {
   console.error(`[Vue-infinite-loading error]: ${msg}`);
 }
 const throttleer = {
   timers: [],
   caches: [],
-
   throttle(fn) {
     if (this.caches.indexOf(fn) === -1) {
       // cache current handler
-      this.caches.push(fn); // save timer for current handler
+      this.caches.push(fn);
 
+      // save timer for current handler
       this.timers.push(setTimeout(() => {
-        fn(); // empty cache and timer
+        fn();
 
+        // empty cache and timer
         this.caches.splice(this.caches.indexOf(fn), 1);
         this.timers.shift();
       }, config.system.throttleLimit));
     }
   },
-
   reset() {
     // reset all timers
     this.timers.forEach(timer => {
       clearTimeout(timer);
     });
-    this.timers.length = 0; // empty caches
+    this.timers.length = 0;
 
+    // empty caches
     this.caches = [];
   }
-
 };
 const loopTracker = {
   isChecked: false,
   timer: null,
   times: 0,
-
   track() {
     // record track times
-    this.times += 1; // try to mark check status
+    this.times += 1;
 
+    // try to mark check status
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.isChecked = true;
-    }, config.system.loopCheckTimeout); // throw warning if the times of continuous calls large than the maximum times
+    }, config.system.loopCheckTimeout);
 
+    // throw warning if the times of continuous calls large than the maximum times
     if (this.times > config.system.loopCheckMaxCalls) {
       error(ERRORS.INFINITE_LOOP);
       this.isChecked = true;
     }
   }
-
 };
 const scrollBarStorage = {
   key: '_infiniteScrollHeight',
-
   getScrollElm(elm) {
     return elm === window ? document.documentElement : elm;
   },
-
   save(elm) {
-    const target = this.getScrollElm(elm); // save scroll height on the scroll parent
+    const target = this.getScrollElm(elm);
 
+    // save scroll height on the scroll parent
     target[this.key] = target.scrollHeight;
   },
-
   restore(elm) {
     const target = this.getScrollElm(elm);
-    /* istanbul ignore else */
 
+    /* istanbul ignore else */
     if (typeof target[this.key] === 'number') {
       target.scrollTop = target.scrollHeight - target[this.key] + target.scrollTop;
     }
-
     this.remove(target);
   },
-
   remove(elm) {
     if (elm[this.key] !== undefined) {
       // remove scroll height
       delete elm[this.key]; // eslint-disable-line no-param-reassign
     }
   }
-
 };
+
 /**
  * kebab-case a camel-case string
  * @param   {String}    str  source string
  * @return  {String}
  */
-
 function kebabCase(str) {
   return str.replace(/[A-Z]/g, s => `-${s.toLowerCase()}`);
 }
+
 /**
  * get visibility for element
  * @param   {DOM}     elm
  * @return  {Boolean}
  */
-
 function isVisible(elm) {
   return elm.offsetWidth + elm.offsetHeight > 0;
 }
 
 var script = /* #__PURE__ */defineComponent({
   name: 'InfiniteLoading',
-
   data() {
     return {
       scrollParent: null,
@@ -413,7 +406,6 @@ var script = /* #__PURE__ */defineComponent({
       slots: config.slots
     };
   },
-
   components: {
     Spinner: script$1
   },
@@ -422,28 +414,25 @@ var script = /* #__PURE__ */defineComponent({
     isShowSpinner() {
       return this.status === STATUS.LOADING;
     },
-
     isShowError() {
       return this.status === STATUS.ERROR;
     },
-
     isShowNoResults() {
       return this.status === STATUS.COMPLETE && this.isFirstLoad;
     },
-
     isShowNoMore() {
       return this.status === STATUS.COMPLETE && !this.isFirstLoad;
     },
-
     slotStyles() {
       const styles = {};
       Object.keys(config.slots).forEach(key => {
-        var _this$$slots$name$;
-
         const name = kebabCase(key);
+        if (
+        // no slot and the configured default slot is not a Vue component
+        !this.$slots[name] && !config.slots[key].render
 
-        if ( // no slot and the configured default slot is not a Vue component
-        !this.$slots[name] && !config.slots[key].render || this.$slots[name] && ((_this$$slots$name$ = this.$slots[name]()[0]) === null || _this$$slots$name$ === void 0 ? void 0 : _this$$slots$name$.type) === Text) {
+        // has slot and slot is pure text node
+        || this.$slots[name] && this.$slots[name]()[0]?.type === Text) {
           // only apply default styles for pure text slot
           styles[key] = SLOT_STYLES;
         } else {
@@ -452,7 +441,6 @@ var script = /* #__PURE__ */defineComponent({
       });
       return styles;
     }
-
   },
   props: {
     distance: {
@@ -476,16 +464,13 @@ var script = /* #__PURE__ */defineComponent({
     identifier() {
       this.stateChanger.reset();
     }
-
   },
-
   mounted() {
     this.$watch('forceUseInfiniteWrapper', () => {
       this.scrollParent = this.getScrollParent();
     }, {
       immediate: true
     });
-
     this.scrollHandler = ev => {
       if (this.status === STATUS.READY) {
         if (ev && ev.constructor === Event && isVisible(this.$el)) {
@@ -495,28 +480,30 @@ var script = /* #__PURE__ */defineComponent({
         }
       }
     };
-
     setTimeout(() => {
       this.scrollHandler();
       this.scrollParent.addEventListener('scroll', this.scrollHandler, evt3rdArg);
     }, 1);
-    eventHub.$on('$InfiniteLoading:loaded', () => {
+    eventHub.$on('$InfiniteLoading:loaded', obj => {
       this.isFirstLoad = false;
-
       if (this.direction === 'top') {
         // wait for DOM updated
         this.$nextTick(() => {
           scrollBarStorage.restore(this.scrollParent);
         });
       }
-
       if (this.status === STATUS.LOADING) {
-        this.$nextTick(this.attemptLoad.bind(null, true));
+        if (obj.stop) {
+          this.status = STATUS.READY;
+        } else {
+          this.$nextTick(this.attemptLoad.bind(null, true));
+        }
       }
     });
     eventHub.$on('$InfiniteLoading:complete', () => {
-      this.status = STATUS.COMPLETE; // force re-complation computed properties to fix the problem of get slot text delay
+      this.status = STATUS.COMPLETE;
 
+      // force re-complation computed properties to fix the problem of get slot text delay
       this.$nextTick(() => {
         this.$forceUpdate();
       });
@@ -526,24 +513,27 @@ var script = /* #__PURE__ */defineComponent({
       this.status = STATUS.READY;
       this.isFirstLoad = true;
       scrollBarStorage.remove(this.scrollParent);
-      this.scrollParent.addEventListener('scroll', this.scrollHandler, evt3rdArg); // wait for list to be empty and the empty action may trigger a scroll event
+      this.scrollParent.addEventListener('scroll', this.scrollHandler, evt3rdArg);
 
+      // wait for list to be empty and the empty action may trigger a scroll event
       setTimeout(() => {
         throttleer.reset();
         this.scrollHandler();
       }, 1);
     });
+
     /**
      * change state for this component, pass to the callback
      */
-
     this.stateChanger = {
-      loaded: () => {
+      loaded: (stopContinousLoadIgnoreVisibility = false) => {
         this.$emit('$InfiniteLoading:loaded', {
-          target: this
+          target: this,
+          stop: stopContinousLoadIgnoreVisibility
         });
         eventHub.$emit('$InfiniteLoading:loaded', {
-          target: this
+          target: this,
+          stop: stopContinousLoadIgnoreVisibility
         });
       },
       complete: () => {
@@ -567,12 +557,10 @@ var script = /* #__PURE__ */defineComponent({
         throttleer.reset();
       }
     };
-
     if (this.onInfinite) {
       warn(WARNINGS.INFINITE_EVENT);
     }
   },
-
   /**
    * To adapt to keep-alive feature, but only work on Vue 2.2.0 and above, see: https://vuejs.org/v2/api/#keep-alive
    */
@@ -581,14 +569,11 @@ var script = /* #__PURE__ */defineComponent({
     if (this.status === STATUS.LOADING) {
       this.status = STATUS.READY;
     }
-
     this.scrollParent.removeEventListener('scroll', this.scrollHandler, evt3rdArg);
   },
-
   activated() {
     this.scrollParent.addEventListener('scroll', this.scrollHandler, evt3rdArg);
   },
-
   methods: {
     /**
      * attempt trigger load
@@ -599,20 +584,17 @@ var script = /* #__PURE__ */defineComponent({
     attemptLoad(isContinuousCall) {
       if (this.status !== STATUS.COMPLETE && isVisible(this.$el) && this.getCurrentDistance() <= this.distance) {
         this.status = STATUS.LOADING;
-
         if (this.direction === 'top') {
           // wait for spinner display
           this.$nextTick(() => {
             scrollBarStorage.save(this.scrollParent);
           });
         }
-
         if (typeof this.onInfinite === 'function') {
           this.onInfinite.call(null, this.stateChanger);
         } else {
           this.$emit('infinite', this.stateChanger);
         }
-
         if (isContinuousCall && !this.forceUseInfiniteWrapper && !loopTracker.isChecked) {
           // check this component whether be in an infinite loop if it is not checked
           // more details: https://github.com/PeachScript/vue-infinite-loading/issues/55#issuecomment-316934169
@@ -622,14 +604,12 @@ var script = /* #__PURE__ */defineComponent({
         this.status = STATUS.READY;
       }
     },
-
     /**
      * get current distance from the specified direction
      * @return {Number}     distance
      */
     getCurrentDistance() {
       let distance;
-
       if (this.direction === 'top') {
         distance = typeof this.scrollParent.scrollTop === 'number' ? this.scrollParent.scrollTop : this.scrollParent.pageYOffset;
       } else {
@@ -637,10 +617,8 @@ var script = /* #__PURE__ */defineComponent({
         const scrollElmOffsetTopFromBottom = this.scrollParent === window ? window.innerHeight : this.scrollParent.getBoundingClientRect().bottom;
         distance = infiniteElmOffsetTopFromBottom - scrollElmOffsetTopFromBottom;
       }
-
       return distance;
     },
-
     /**
      * get the first scroll parent of an element
      * @param  {DOM} elm    cache element for recursive search
@@ -648,11 +626,9 @@ var script = /* #__PURE__ */defineComponent({
      */
     getScrollParent(elm = this.$el) {
       let result;
-
       if (typeof this.forceUseInfiniteWrapper === 'string') {
         result = document.querySelector(this.forceUseInfiniteWrapper);
       }
-
       if (!result) {
         if (elm.tagName === 'BODY') {
           result = window;
@@ -662,12 +638,9 @@ var script = /* #__PURE__ */defineComponent({
           result = elm;
         }
       }
-
       return result || this.getScrollParent(elm.parentNode);
     }
-
   },
-
   unmounted() {
     /* istanbul ignore else */
     if (!this.status !== STATUS.COMPLETE) {
@@ -676,21 +649,16 @@ var script = /* #__PURE__ */defineComponent({
       this.scrollParent.removeEventListener('scroll', this.scrollHandler, evt3rdArg);
     }
   }
-
 });
 
-const _withScopeId = n => (pushScopeId("data-v-38327aa8"), n = n(), popScopeId(), n);
-
+const _withScopeId = n => (pushScopeId("data-v-73b29e84"), n = n(), popScopeId(), n);
 const _hoisted_1 = {
   class: "infinite-loading-container"
 };
-
 const _hoisted_2 = /*#__PURE__*/_withScopeId(() => /*#__PURE__*/createElementVNode("br", null, null, -1));
-
 const _hoisted_3 = ["textContent"];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_spinner = resolveComponent("spinner");
-
   return openBlock(), createElementBlock("div", _hoisted_1, [withDirectives(createElementVNode("div", {
     class: "infinite-status-prompt",
     style: normalizeStyle(_ctx.slotStyles.spinner)
@@ -729,26 +697,29 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   }, null, 8, _hoisted_3)], 64))])], 4), [[vShow, _ctx.isShowError]])]);
 }
 
-var css_248z = ".infinite-loading-container[data-v-38327aa8] {\n  clear: both;\n  text-align: center;\n}\n.infinite-loading-container[data-v-38327aa8] *[class^=loading-] {\n  display: inline-block;\n  margin: 5px 0;\n  width: 28px;\n  height: 28px;\n  font-size: 28px;\n  line-height: 28px;\n  border-radius: 50%;\n}\n.btn-try-infinite[data-v-38327aa8] {\n  margin-top: 5px;\n  padding: 5px 10px;\n  color: #999;\n  font-size: 14px;\n  line-height: 1;\n  background: transparent;\n  border: 1px solid #ccc;\n  border-radius: 3px;\n  outline: none;\n  cursor: pointer;\n}\n.btn-try-infinite[data-v-38327aa8]:not(:active):hover {\n  opacity: 0.8;\n}\n";
+var css_248z = ".infinite-loading-container[data-v-73b29e84] {\n  clear: both;\n  text-align: center;\n}\n.infinite-loading-container[data-v-73b29e84] *[class^=loading-] {\n  display: inline-block;\n  margin: 5px 0;\n  width: 28px;\n  height: 28px;\n  font-size: 28px;\n  line-height: 28px;\n  border-radius: 50%;\n}\n.btn-try-infinite[data-v-73b29e84] {\n  margin-top: 5px;\n  padding: 5px 10px;\n  color: #999;\n  font-size: 14px;\n  line-height: 1;\n  background: transparent;\n  border: 1px solid #ccc;\n  border-radius: 3px;\n  outline: none;\n  cursor: pointer;\n}\n.btn-try-infinite[data-v-73b29e84]:not(:active):hover {\n  opacity: 0.8;\n}\n";
 styleInject(css_248z);
 
 script.render = render;
-script.__scopeId = "data-v-38327aa8";
+script.__scopeId = "data-v-73b29e84";
 
 // Import vue component
+
+// Default export is installable instance of component.
 // IIFE injects install function into component, allowing component
 // to be registered via Vue.use() as well as Vue.component(),
-
 var entry_esm = /* #__PURE__ */(() => {
   // Get component instance
-  const installable = script; // Attach install function executed by Vue.use()
+  const installable = script;
 
+  // Attach install function executed by Vue.use()
   installable.install = app => {
     app.component('VueInfiniteLoading', installable);
   };
-
   return installable;
-})(); // It's possible to expose named exports when writing components that can
+})();
+
+// It's possible to expose named exports when writing components that can
 // also be used as directives, etc. - eg. import { RollupDemoDirective } from 'rollup-demo';
 // export const RollupDemoDirective = directive;
 

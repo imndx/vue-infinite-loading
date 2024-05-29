@@ -117,7 +117,7 @@ export default /* #__PURE__ */defineComponent({
       this.scrollParent.addEventListener('scroll', this.scrollHandler, evt3rdArg);
     }, 1);
 
-    eventHub.$on('$InfiniteLoading:loaded', () => {
+    eventHub.$on('$InfiniteLoading:loaded', (obj) => {
       this.isFirstLoad = false;
 
       if (this.direction === 'top') {
@@ -128,7 +128,11 @@ export default /* #__PURE__ */defineComponent({
       }
 
       if (this.status === STATUS.LOADING) {
-        this.$nextTick(this.attemptLoad.bind(null, true));
+        if(obj.stop){
+          this.status = STATUS.READY;
+        } else{
+          this.$nextTick(this.attemptLoad.bind(null, true));
+        }
       }
     });
 
@@ -160,9 +164,9 @@ export default /* #__PURE__ */defineComponent({
      * change state for this component, pass to the callback
      */
     this.stateChanger = {
-      loaded: () => {
-        this.$emit('$InfiniteLoading:loaded', { target: this });
-        eventHub.$emit('$InfiniteLoading:loaded', { target: this });
+      loaded: (stopContinousLoadIgnoreVisibility = false) => {
+        this.$emit('$InfiniteLoading:loaded', { target: this, stop: stopContinousLoadIgnoreVisibility });
+        eventHub.$emit('$InfiniteLoading:loaded', { target: this, stop: stopContinousLoadIgnoreVisibility });
       },
       complete: () => {
         this.$emit('$InfiniteLoading:complete', { target: this });
